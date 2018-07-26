@@ -57,6 +57,7 @@ global d= 8
 	
 * access the acn distance data
 use "${GPS_create}idmen_distanceacn", clear
+
 preserve
 
 *some idmen missing idacn, idacdn in 2016
@@ -67,8 +68,11 @@ rename newid_acn id_acn
 rename newid_acdn id_acdn
 
 reshape wide distance_acn distance_acdn, i(idmen) j(year)
+pwcorr distance_acn2015 distance_acn2016, sig star(.05)
+*r > 0.99
+pwcorr distance_acdn2015 distance_acdn2016, sig star(.05)
+*r > 0.99
 
-drop grappe id_acn id_acdn
 
 * access ACN ALL
 use "${All_create}/ACN_All_wide.dta", clear
@@ -85,6 +89,19 @@ save `acn', replace
 restore
 
 merge m:1 grappe year using `acn'
+
+/*
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                           126
+        from master                         0  (_merge==1)
+        from using                        126  (_merge==2) ===> 2014 data in idmen_distanceacn are missing
+
+    matched                             7,159  (_merge==3)
+    -----------------------------------------
+*/
+
+
 drop _merge
 
 sort idmen year
@@ -96,6 +113,7 @@ browse if id_acn != idacn
 
 browse if id_acdn !=Didacn
 * the non-matching ones: id_acdn ends in 4, Didacn ends in 2
+replace Didacn = id_acdn if id_acdn !=Didacn
 
 drop id_acn id_acdn
 
