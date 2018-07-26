@@ -59,6 +59,17 @@ global d= 8
 use "${GPS_create}idmen_distanceacn", clear
 preserve
 
+*some idmen missing idacn, idacdn in 2016
+bys idmen: egen newid_acn = max(id_acn)
+bys idmen: egen newid_acdn = max(id_acdn)
+drop id_acn id_acdn
+rename newid_acn id_acn
+rename newid_acdn id_acdn
+
+reshape wide distance_acn distance_acdn, i(idmen) j(year)
+
+drop grappe id_acn id_acdn
+
 * access ACN ALL
 use "${All_create}/ACN_All_wide.dta", clear
 
