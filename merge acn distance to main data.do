@@ -50,76 +50,256 @@ global d= 8
 	gl GPS_create "${Mada}gps/created_data/"
 	}
 	
-
-
-
-
-	
-* access the acn distance data
-use "${GPS_create}idmen_distanceacn", clear
-
-preserve
-
-*some idmen missing idacn, idacdn in 2016
-bys idmen: egen newid_acn = max(id_acn)
-bys idmen: egen newid_acdn = max(id_acdn)
-drop id_acn id_acdn
-rename newid_acn id_acn
-rename newid_acdn id_acdn
-
-reshape wide distance_acn distance_acdn, i(idmen) j(year)
-pwcorr distance_acn2015 distance_acn2016, sig star(.05)
-*r > 0.99
-pwcorr distance_acdn2015 distance_acdn2016, sig star(.05)
-*r > 0.99
-
-
-* access ACN ALL
-use "${All_create}/ACN_All_wide.dta", clear
-
 /*
-Identifier:
-ACN_All.dta - idacn
-idmen_distanceacn.dta - id_acn, id_acdn
+****
+Structure:
+	Infant_All
+	 merge in idmen_distanceacn
+	 merge in ACN_All_wide
+****
 */
 
-tempfile acn
-save `acn', replace
 
-restore
 
-merge m:1 grappe year using `acn'
+*1. Merge household distance to ACN/ACDN with infant_all
+	
+		* access the acn distance data
+		use "${GPS_create}idmen_distanceacn", clear
+		sort idmen year
+		tempfile idmendist
+		save `idmendist', replace
+		
+		*some idmen missing idacn, idacdn in 2016
+		bys idmen: egen newid_acn = max(id_acn)
+		bys idmen: egen newid_acdn = max(id_acdn)
+		drop id_acn id_acdn
+		rename newid_acn id_acn
+		rename newid_acdn id_acdn
+		
+		reshape wide distance_acn distance_acdn, i(idmen) j(year)
+		pwcorr distance_acn2015 distance_acn2016, sig star(.05)
+		*r > 0.99
+		pwcorr distance_acdn2015 distance_acdn2016, sig star(.05)
+		*r > 0.99
+		
+		use `idmendist', clear
+		expand 2 if year == 2015
+		sort idmen year
+		by idmen: replace year = 2014 if _n==1
+		save `idmendist', replace
+		
+		 *Access infant_all data
+		use "${All_create}infant_All", clear
+		
+		merge m:m idmen year using `idmendist'
+		
+			/*
+			
+				Result                           # of obs.
+				-----------------------------------------
+				not matched                         2,127
+					from master                     1,254  (_merge==1)
+					from using                        873  (_merge==2)
+			
+				matched                            11,250  (_merge==3)
+				-----------------------------------------
+			*/
+		
+			drop if _m ==2 // non-existing infant data in 2014
+			
+		/* no idmen distance data available:
+		
+				tab year if _m ==1
+				
+					   year |      Freq.     Percent        Cum.
+				------------+-----------------------------------
+					   2014 |        590       47.05       47.05
+					   2015 |         38        3.03       50.08
+					   2016 |        626       49.92      100.00
+				------------+-----------------------------------
+					  Total |      1,254      100.00
+		*/
+		
+		rename _m idmendist_merge
+		
+		
+		tempfile all
+		save `all', replace
+
+		
+*2. Merge ACN/ACDN data with infant_all
+
+		* access ACN ALL
+		use "${All_create}/ACN_All_wide.dta", clear
+		
+			/*
+			* Abount ACN & ACDN id between ACN_All and idmen_distanceacn 
+			
+			Identifier:
+			ACN_All.dta - idacn, Didacn
+			idmen_distanceacn.dta - id_acn, id_acdn
+			
+				*ACN
+					* some are missing id_acn but have idacn
+				
+				*ACDN
+					* the non-matching ones: id_acdn ends in 4 or 6, Didacn ends in 2
+			*/
+			
+			rename idacn id_acn
+			rename Didacn id_acdn
+		
+		tempfile acn
+		save `acn', replace
+
+
+		*call back the infant_all + idmendist data
+		use `all', clear
+
+		merge m:1 grappe year using `acn', update replace
+
+			/*
+			
+				Result                           # of obs.
+				-----------------------------------------
+				not matched                             0
+			
+				matched                            12,504
+					not updated                    10,168  (_merge==3)
+					missing updated                 1,441  (_merge==4)
+					nonmissing conflict               895  (_merge==5)
+				-----------------------------------------
+			
+			*/
+
+		rename _m acn_merge
+
+	bys idind: egen all_targeted = max(targeted)
+	label var all_targeted "targeted child"
+	
+	drop if all_targeted == .
+	
+	sort idmen idind year
+	
+	
+	*update missing distance_data using data from previous years
+			tab year if distance_acn == .
+		/*
+			   year |      Freq.     Percent        Cum.
+		------------+-----------------------------------
+			   2014 |          1        0.15        0.15
+			   2015 |         33        4.98        5.14
+			   2016 |        628       94.86      100.00
+		------------+-----------------------------------
+			  Total |        662      100.00
+		*/
+			tab year if distance_acdn == .
+		/*
+			   year |      Freq.     Percent        Cum.
+		------------+-----------------------------------
+			   2014 |          1        0.15        0.15
+			   2015 |         33        4.98        5.14
+			   2016 |        628       94.86      100.00
+		------------+-----------------------------------
+			  Total |        662      100.00
+		*/
+			
+			
+			tsset, clear
+			tsset idind year, y
+			
+			replace distance_acn = L.distance_acn if year == 2015 & distance_acn == . & L.distance_acn !=.
+			replace distance_acn = L.distance_acn if year == 2016 & distance_acn == . & L.distance_acn !=.
+			replace distance_acdn = L.distance_acdn if year == 2015 & distance_acdn == . & L.distance_acdn !=.
+			replace distance_acdn = L.distance_acdn if year == 2016 & distance_acdn == . & L.distance_acdn !=.
+
+
+save "${All_create}ACN_Infant_All", replace
+
+
 
 /*
+
+*Merge infant_All data
+
+merge m:m idmen year using "${All_create}infant_All"
+ta _m if year>2014
+* There is a problem for 39/6 households that do not fully merge - need to be checked case by case
+g nomatch = (_m != 3 & year > 2014)
+label var nomatch "households not fully merge" 
+drop _m
+
+merge m:1 grappe year using `dist2014', update replace
+
+			/*
     Result                           # of obs.
     -----------------------------------------
-    not matched                           126
-        from master                         0  (_merge==1)
-        from using                        126  (_merge==2) ===> 2014 data in idmen_distanceacn are missing
+    not matched                         8,739
+        from master                     8,739  (_merge==1)
+        from using                          0  (_merge==2)
 
-    matched                             7,159  (_merge==3)
+    matched                             3,771
+        not updated                         0  (_merge==3)
+        missing updated                 3,771  (_merge==4)
+        nonmissing conflict                 0  (_merge==5)
     -----------------------------------------
 */
+	bys idind: egen all_targeted = max(targeted)
+	label var all_targeted "targeted child"
+	
+/*
+			tab year if _m == 4
+			
+			(mean) year |      Freq.     Percent        Cum.
+			------------+-----------------------------------
+				   2014 |      3,738       99.12       99.12
+				   2015 |         33        0.88      100.00
+			------------+-----------------------------------
+				  Total |      3,771      100.00
+				  
+			*33 matched ones in 2015
+			
+			tab nomatch if _m == 4 & year == 2015
+			
+			 households |
+			  not fully |
+				  merge |      Freq.     Percent        Cum.
+			------------+-----------------------------------
+					  1 |         33      100.00      100.00
+			------------+-----------------------------------
+				  Total |         33      100.00
+				  
+			*they are part of the not fully merged households
+			
+			tab _m if nomatch == 1
 
+							 _merge |      Freq.     Percent        Cum.
+			------------------------+-----------------------------------
+					master only (1) |         12       26.67       26.67
+				missing updated (4) |         33       73.33      100.00
+			------------------------+-----------------------------------
+							  Total |         45      100.00
 
-drop _merge
+			*the 33 households in 2015 are all updated
+			
+			. tab all_targeted if nomatch ==1 & _m ==1
 
-sort idmen year
+			   targeted |
+				  child |      Freq.     Percent        Cum.
+			------------+-----------------------------------
+					  1 |          5      100.00      100.00
+			------------+-----------------------------------
+				  Total |          5      100.00
 
-save "${All_create}ACN_All_wide_distance", replace
+			* 5 out of the 12 in masteronly are targeted children
+			idind:
+					573503
+					673501
+					984604
+					984704
+					1214802
 
-browse if id_acn != idacn
-* some are missing id_acn but have idacn
+			*/
+			
 
-browse if id_acdn !=Didacn
-* the non-matching ones: id_acdn ends in 4, Didacn ends in 2
-replace Didacn = id_acdn if id_acdn !=Didacn
-
-drop id_acn id_acdn
-
-rename idacn id_acn
-rename Didacn id_acdn
-
-save "${All_create}ACN_All_wide_distance", replace
-
-**idmen_distanceacn data does not include 2014 information
+	
