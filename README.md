@@ -5,6 +5,8 @@
 ### create ACN_Infant_All.do
 
 - Pull in the data of the distance between households and ACN/ACDN and the information of ACN/ACDN to Infant_All dataset
+- Data saved to /Madagascar Mahay Data/analysis/all_create/ACN_Infant_All.dta
+
 
 ### create_ACN_all.do
 
