@@ -335,18 +335,18 @@ keep grappe year tacn baseline_* turnover* idacn acn_age acn_marstatus ///
 acn_nokids acn_otheractiv acn_edulevel acn_religion acn_wealth_index ///
 act_curr_agri act_curr_trader act_bef_agri act_bef_trader act_bef_teacher ///
 acn_knowledge_score acn_hygiene_score ///
-acn_motivation_score acn_mot_* acn_v_tot
+acn_mot_score acn_mot_* acn_v_tot
 
 * keep one observation per grappe (reshaped wide)
 for var idacn acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel ///
  acn_religion acn_wealth_index act_curr_agri act_curr_trader act_bef_agri ///
  act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score ///
- acn_motivation_score acn_mot_* acn_v_tot : g DX=X if tacn==2
+ acn_mot_* acn_v_tot : g DX=X if tacn==2
  
 for var idacn acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel ///
 acn_religion acn_wealth_index act_curr_agri act_curr_trader act_bef_agri ///
 act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score ///
-acn_motivation_score acn_mot_* acn_v_tot: replace X=. if tacn==2
+ acn_mot_* acn_v_tot: replace X=. if tacn==2
 
 collapse idacn* acn* turnover_* baseline* D*, by(grappe year)
 drop if grappe==.
