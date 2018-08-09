@@ -322,22 +322,31 @@ rename ca10 acn_nokids
 rename cc03 acn_otheractivity
 rename ca03a acn_edulevel
 
+rename motivation_score acn_mot_score
+for var mot_*: rename X acn_X
+rename v_tot acn_v_tot
+
+
 save "${All_create}ACN_All", replace
 
+* add motivation score and vocabulary 
 use  "${All_create}ACN_All", clear
 keep grappe year tacn baseline_* turnover* idacn acn_age acn_marstatus ///
 acn_nokids acn_otheractiv acn_edulevel acn_religion acn_wealth_index ///
 act_curr_agri act_curr_trader act_bef_agri act_bef_trader act_bef_teacher ///
-acn_knowledge_score acn_hygiene_score
+acn_knowledge_score acn_hygiene_score ///
+acn_motivation_score acn_mot_* acn_v_tot
 
 * keep one observation per grappe (reshaped wide)
 for var idacn acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel ///
  acn_religion acn_wealth_index act_curr_agri act_curr_trader act_bef_agri ///
- act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score: g DX=X if tacn==2
+ act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score ///
+ acn_motivation_score acn_mot_* acn_v_tot : g DX=X if tacn==2
  
 for var idacn acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel ///
 acn_religion acn_wealth_index act_curr_agri act_curr_trader act_bef_agri ///
-act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score: replace X=. if tacn==2
+act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score ///
+acn_motivation_score acn_mot_* acn_v_tot: replace X=. if tacn==2
 
 collapse idacn* acn* turnover_* baseline* D*, by(grappe year)
 drop if grappe==.
