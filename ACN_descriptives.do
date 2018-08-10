@@ -66,7 +66,7 @@ log using "${ACN_log}ACN_descriptives", replace
 	acn_mot_* acn_v_tot
 	
 
-	for var acn_*: tab X, m
+	for var acn_*: quietly tab X, m
 		*acn_v_tot: 419 missing
 		*1 ACDN age = 234
 	replace acn_age = . if acn_age >=99
