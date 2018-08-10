@@ -59,7 +59,9 @@ Structure:
 ****
 */
 
-
+cd "$Mada"
+clear matrix
+capture log close
 
 *1. Merge household distance to ACN/ACDN with infant_all
 	
