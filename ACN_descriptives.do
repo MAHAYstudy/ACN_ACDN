@@ -195,7 +195,7 @@ end
 		pairttest $ACNvar if year==2015 | year== 2016 
 
 		estout . using "${TABLES}ACN_ACDN/ACN_ACDN_Characteristics.txt", r ///
-		title("ACN ACDN characteristics comparison - paired") ///
+		title("ACN ACDN characteristics comparison - paired") legend label ///
 		c("mu_1(fmt(%9.2f) label(ACN mean)) mu_2(fmt(%9.2f) label(ACDN mean)) b(fmt(%9.3f) star label(mean difference)) p(par fmt(%9.3f))")
 
 
