@@ -40,7 +40,7 @@ global d= 8
 	gl ADMIN_create "${Mada}admin_data/created_data/"		
 	
 	** ANALYSIS FOLDERS
-	global TABLES "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/" //
+	global TABLES "${Mada}analysis/tables/" // "/Users/Ling/Desktop/MadaTables/" //
 	global GRAPHS "${Mada}analysis/graphs/"
 	global All_create "${Mada}analysis/all_create/"
 	global ACN_log "${Mada}analysis/ACN_log/"
@@ -82,13 +82,121 @@ log using "${ACN_log}ACN_descriptives", replace
 	use "${All_create}ACN_All_wide", clear
 	replace Dacn_age = . if Dacn_age == 234
 	
-		global ACNvar "acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel acn_wealth_index acn_knowledge_score acn_hygiene_score acn_mot_score acn_v_tot"
+		global ACNvar "acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel acn_wealth_index acn_knowledge_score acn_hygiene_score acn_mot_* acn_v_tot"
 		
-		foreach var in $ACNvar {
-		quietly ttest `var'==D`var' if year==2015 | year== 2016 
-		eststo ACNttest
-	}
-		estout ACNttest,  c("mu_1(fmt(%9.2f) label(ACN mean)) mu_2(fmt(%9.2f) label(ACDN mean)) b(fmt(%9.3f) star label(mean difference)) p(par fmt(%9.3f))")
+	*programs for paired t test
+									capture program drop _estpost_markout2
+									program _estpost_markout2 // marks out obs that are missing on *all* variables
+								gettoken touse varlist: 0
+								if `:list sizeof varlist'>0 {
+									tempname touse2
+									gen byte `touse2' = 0
+									foreach var of local varlist {
+										qui replace `touse2' = 1 if !missing(`var')
+									}
+									qui replace `touse' = 0 if `touse2'==0
+								}
+							end
+									
+									capture program drop pairttest
+							
+									* 5. pairttest: wrapper for -ttest- 
+									prog pairttest, eclass
+    version 8.2
+    local caller : di _caller() // not used
+
+    // syntax
+    syntax varlist(numeric) [if] [in] , [by(varname)] [ ESample Quietly ///
+         LISTwise CASEwise UNEqual Welch ]
+    if "`casewise'"!="" local listwise listwise
+
+    // sample
+    if "`listwise'"!="" marksample touse
+    else {
+        marksample touse, nov
+        _estpost_markout2 `touse' `varlist'
+    }
+    markout `touse' `by', strok
+    qui count if `touse'
+    local N = r(N)
+    if `N'==0 error 2000
+
+	
+    // gather results
+    local nvars: list sizeof varlist
+    tempname diff count
+    mat `diff' = J(1, `nvars', .)
+    mat coln `diff' = `varlist'
+    mat `count' = `diff'
+    local mnames se /*sd*/ t df_t p_l p p_u N_1 mu_1 /*sd_1*/ N_2 mu_2 /*sd_2*/
+    foreach m of local mnames {
+        tempname `m'
+        mat ``m'' = `diff'
+    }
+    local i 0
+    foreach v of local varlist {
+        local ++i
+        qui ttest `v' == D`v' if `touse', `unequal' `welch'
+        mat `diff'[1,`i'] = r(mu_1) - r(mu_2)
+        mat `count'[1,`i'] = r(N_1) + r(N_2)
+        foreach m of local mnames {
+            mat ``m''[1,`i'] = r(`m')
+        }
+    }
+
+    // display
+    if "`quietly'"=="" {
+        tempname res
+        mat `res' = `diff'', `count''
+        local rescoln "e(b) e(count)"
+        foreach m of local mnames {
+            mat `res' = `res', ``m'''
+            local rescoln `rescoln' e(`m')
+        }
+        mat coln `res' = `rescoln'
+        if c(stata_version)<9 {
+            mat list `res', noheader nohalf format(%9.0g)
+        }
+        else {
+            matlist `res', nohalf lines(oneline)
+        }
+        mat drop `res'
+    }
+
+    // post results
+    local V
+    if c(stata_version)<9 { // V required in Stata 8
+        tempname V
+        mat `V' = diag(vecdiag(`se'' * `se'))
+    }
+    if "`esample'"!="" local esample esample(`touse')
+    eret post `diff' `V', obs(`N') `esample'
+
+    eret scalar k = `nvars'
+
+    eret local wexp `"`exp'"'
+    eret local wtype `"`weight'"'
+    eret local welch "`welch'"
+    eret local unequal "`unequal'"
+    eret local byvar "`by'"
+    eret local subcmd "ttest"
+    eret local cmd "estpost"
+
+    local nmat: list sizeof mnames
+    forv i=`nmat'(-1)1 {
+        local m: word `i' of `mnames'
+        eret matrix `m' = ``m''
+    }
+    eret matrix count = `count'
+end
+		
+		
+
+		pairttest $ACNvar if year==2015 | year== 2016 
+
+		estout . using "${TABLES}ACN_ACDN/ACN_ACDN_Characteristics.txt", r ///
+		title("ACN ACDN characteristics comparison - paired") ///
+		c("mu_1(fmt(%9.2f) label(ACN mean)) mu_2(fmt(%9.2f) label(ACDN mean)) b(fmt(%9.3f) star label(mean difference)) p(par fmt(%9.3f))")
 
 
 *Compare within and between treatment arms
