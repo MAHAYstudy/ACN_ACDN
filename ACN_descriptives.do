@@ -64,7 +64,7 @@ log using "${ACN_log}ACN_descriptives", replace
 	acn_nokids acn_otheractiv acn_edulevel acn_religion acn_wealth_index ///
 	act_curr_agri act_curr_trader act_bef_agri act_bef_trader act_bef_teacher ///
 	acn_knowledge_score acn_hygiene_score ///
-	acn_mot_* acn_v_tot
+	acn_mot_* acn_smot* acn_v_tot
 	
 
 	for var acn_*: quietly tab X, m
@@ -85,7 +85,7 @@ log using "${ACN_log}ACN_descriptives", replace
 	use "${All_create}ACN_All_wide", clear
 	replace Dacn_age = . if Dacn_age == 234
 	
-		global ACNvar "acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel acn_wealth_index acn_knowledge_score acn_hygiene_score acn_mot_* acn_v_tot"
+		global ACNvar "acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel acn_wealth_index acn_knowledge_score acn_hygiene_score acn_mot_* acn_smot_score acn_v_tot"
 		
 	*programs for paired t test
 									capture program drop _estpost_markout2
@@ -102,8 +102,7 @@ log using "${ACN_log}ACN_descriptives", replace
 							end
 									
 									capture program drop pairttest
-							
-									* 5. pairttest: wrapper for -ttest- 
+									*  pairttest: wrapper for -ttest- 
 									prog pairttest, eclass
     version 8.2
     local caller : di _caller() // not used
