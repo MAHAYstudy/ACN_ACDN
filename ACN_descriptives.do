@@ -6,6 +6,7 @@ version 13
 **********************
 *ACN/ACDN descriptive analysis
 *Ling Hsin    08/2018
+*update: 8/15/18
 **********************
 
 * SET GLOBAL MACROS for path to main directories
@@ -67,14 +68,16 @@ log using "${ACN_log}ACN_descriptives", replace
 	
 
 	for var acn_*: quietly tab X, m
-		*acn_v_tot: 419 missing
+		*acn_v_tot: 419 missing -> 225 missing after update (all in 2015)
 		*1 ACDN age = 234
 	replace acn_age = . if acn_age >=99
 	
 	
 	quietly estpost ttest acn_* if year==2015 | year== 2016, by(tacn)
 	
-	estout ., c("mu_1(fmt(%9.2f) label(ACN mean)) mu_2(fmt(%9.2f) label(ACDN mean)) b(fmt(%9.3f) star label(mean difference)) p(par fmt(%9.3f))") l
+	estout .  using "${TABLES}ACN_ACDN/(unpaired)ACN_ACDN_Characteristics.txt", r ///
+		title("ACN ACDN characteristics comparison - unpaired") legend ///
+		c("mu_1(fmt(%9.2f) label(ACN mean)) mu_2(fmt(%9.2f) label(ACDN mean)) b(fmt(%9.3f) star label(mean difference)) p(par fmt(%9.3f))") l
 	
 	estimate clear
 
