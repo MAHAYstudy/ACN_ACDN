@@ -225,6 +225,9 @@ capture log close
 			replace distance_acdn = L.distance_acdn if year == 2016 & distance_acdn == . & L.distance_acdn !=.
 
 
+			*input ACDN competency score =0 for control group
+			replace Dacn_competency_score = 0 if treatment == 0 & acn_competency_score != .
+			
 save "${All_create}ACN_Infant_All", replace
 
 

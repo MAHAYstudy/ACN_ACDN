@@ -5,6 +5,7 @@ version 13
 *EG: v2: added indicators for ACN/ACDN rotation
 
 * SET GLOBAL MACROS for path to main directories
+*08/18 LH: added index for competency
 
 global d= 8
 	if $d==1 {
@@ -323,6 +324,8 @@ rename cc03 acn_otheractivity
 rename ca03a acn_edulevel
 
 rename motivation_score acn_mot_score
+rename s_motivation_score acn_smot_score
+label var acn_smot_score "sum of motivation subscores"
 for var mot_*: rename X acn_X
 rename v_tot acn_v_tot
 
@@ -335,18 +338,42 @@ keep grappe year tacn baseline_* turnover* idacn acn_age acn_marstatus ///
 acn_nokids acn_otheractiv acn_edulevel acn_religion acn_wealth_index ///
 act_curr_agri act_curr_trader act_bef_agri act_bef_trader act_bef_teacher ///
 acn_knowledge_score acn_hygiene_score ///
-acn_mot_score acn_mot_* acn_v_tot
+acn_mot_score acn_mot_* acn_smot_score acn_v_tot
+
+/*
+*Create an index for :
+	education level, vocabulary, knowledge, hygiene and motivation scores
+ using PCA
+*/
+
+	global Xlist acn_edulevel acn_v_tot acn_knowledge_score acn_hygiene_score acn_smot_score
+	
+	describe $Xlist
+	summ $Xlist
+	corr $Xlist
+	
+	pca $Xlist, //mineigen(1)
+	screeplot, yline(1)
+	
+	rotate
+	
+	loadingplot
+	estat kmo
+	
+	predict acn_competency_score
+	label var acn_competency_score "Index score of education level, vocabulary, knowledge, hygiene and motivation"
+	
 
 * keep one observation per grappe (reshaped wide)
 for var idacn acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel ///
  acn_religion acn_wealth_index act_curr_agri act_curr_trader act_bef_agri ///
  act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score ///
- acn_mot_* acn_v_tot : g DX=X if tacn==2
+ acn_mot_* acn_smot_score acn_v_tot acn_com*: g DX=X if tacn==2
  
 for var idacn acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel ///
 acn_religion acn_wealth_index act_curr_agri act_curr_trader act_bef_agri ///
 act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score ///
- acn_mot_* acn_v_tot: replace X=. if tacn==2
+ acn_mot_* acn_smot_score acn_v_tot acn_com*: replace X=. if tacn==2
 
 collapse idacn* acn* turnover_* baseline* D*, by(grappe year)
 drop if grappe==.

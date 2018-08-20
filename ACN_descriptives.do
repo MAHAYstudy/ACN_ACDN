@@ -6,7 +6,7 @@ version 13
 **********************
 *ACN/ACDN descriptive analysis
 *Ling Hsin    08/2018
-*update: 8/15/18
+*update: 8/18/18
 **********************
 
 * SET GLOBAL MACROS for path to main directories
