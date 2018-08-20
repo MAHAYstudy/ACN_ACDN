@@ -101,6 +101,7 @@ global controls "i.wealth_qui i.birth_order mother_age "
 *		ACN Heterogeneity Analysis		*
 *****************************************
 
+*Kdensity graphs of ACN capacity
 twoway kdensity acn_competency_score if treatment==0 || kdensity acn_competency_score if treatment>0
 twoway kdensity acn_competency_score if treatment==1 ||  kdensity acn_competency_score if treatment==2 ///
 	||  kdensity acn_competency_score if treatment==3 ||  kdensity acn_competency_score if treatment==4
