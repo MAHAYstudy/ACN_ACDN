@@ -346,7 +346,7 @@ acn_mot_score acn_mot_* acn_smot_score acn_v_tot
  using PCA
 */
 
-	global Xlist acn_edulevel acn_v_tot acn_knowledge_score acn_hygiene_score acn_smot_score
+	global Xlist acn_edulevel acn_v_tot acn_knowledge_score acn_hygiene_score acn_mot_score
 	
 	describe $Xlist
 	summ $Xlist
@@ -358,6 +358,7 @@ acn_mot_score acn_mot_* acn_smot_score acn_v_tot
 	rotate
 	
 	loadingplot
+
 	estat kmo
 	
 	predict acn_competency_score

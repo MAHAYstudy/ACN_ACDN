@@ -93,24 +93,36 @@ global fam3 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all
 	
 	
 *Controls	
-global controls "i.wealth_qui i.birth_order mother_age "
+global controls "i.wealth_qui i.birth_order mother_age male i.region i.mother_educ"
 
 
-
+keep if year == 2016
 *****************************************
 *		ACN Heterogeneity Analysis		*
 *****************************************
 
 *Kdensity graphs of ACN capacity
-twoway kdensity acn_competency_score if treatment==0 || kdensity acn_competency_score if treatment>0
-twoway kdensity acn_competency_score if treatment==1 ||  kdensity acn_competency_score if treatment==2 ///
-	||  kdensity acn_competency_score if treatment==3 ||  kdensity acn_competency_score if treatment==4
+	twoway kdensity acn_competency_score if treatment==0 || ///
+		kdensity acn_competency_score if treatment>0 ,  legend(label(1 "ACN Control") label(2 "ACN Treatmet"))
+		
+	twoway kdensity Dacn_competency_score if treatment == 1 || kdensity Dacn_competency_score if treatment == 4 ///
+		, legend(label(1 "ACDN T1") label(2 "ACDN T4"))
 	
+	twoway kdensity acn_competency_score if treatment==1 ||  kdensity acn_competency_score if treatment==2 ///
+		||  kdensity acn_competency_score if treatment==3 ||  kdensity acn_competency_score if treatment==4 ///
+		, legend(label(1 "ACN T1") label(2 "ACN T2") label(3 "ACN T3") label(4 "ACN T4"))
+		
+		
+	twoway kdensity acn_competency_score if treatment>0 || /// 
+		kdensity Dacn_competency_score if treatment>0 ///
+		, legend(label(1 "ACN T1-4") label(2 "ACDN T1-4") 
+
+
 	
 cap erase "${TABLES}ACN_ACDN/capacity.xml"
 cap erase "${TABLES}ACN_ACDN/capacity.txt"
 
 foreach var of varlist $fam1 {
-	reg `var' i.treatment##c.acn_competency_score male i.region i.mother_educ $controls ,  robust cl(grappe)
+	reg `var' i.treatment##c.acn_competency_score $controls ,  robust cl(grappe)
 		
 }

@@ -1,6 +1,8 @@
 clear
 set more off
 version 13
+clear matrix
+capture log close
 
 
 **********************
@@ -60,8 +62,7 @@ Structure:
 */
 
 cd "$Mada"
-clear matrix
-capture log close
+
 
 *1. Merge household distance to ACN/ACDN with infant_all
 	
@@ -85,13 +86,18 @@ capture log close
 		*r > 0.99
 		
 		use `idmendist', clear
+			bys idmen: egen newid_acn = max(id_acn)
+			bys idmen: egen newid_acdn = max(id_acdn)
+			drop id_acn id_acdn
+			rename newid_acn id_acn
+			rename newid_acdn id_acdn
 		expand 2 if year == 2015
 		sort idmen year
 		by idmen: replace year = 2014 if _n==1
 		save `idmendist', replace
 		
-		 *Access infant_all data
-		use "${All_create}infant_All", clear
+		 *Access infant data used for main impact analysis
+		use "${All_create}ITT_table2.dta", clear
 		
 		*Drop variables not used in ACN analysis
 		drop fpc01-a204
