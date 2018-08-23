@@ -1,5 +1,14 @@
 # ACN_ACDN
 
+## DATA STRUCTURE
+
+- create_ACN_all.do -> created ACN_ALL.dta & ACN_ALL_wide.dta
+  - -> ACN_Infant_All.dta
+  - -> ACN_female_All.dta
+  
+
+   
+
 ## dofiles
 
 ### ACN_descriptives.do
@@ -14,3 +23,9 @@
 ### create_ACN_all.do
 
 - Clean and reshape ACN data
+- created ACN_ALL.dta & ACN_ALL_wide.dta
+
+
+
+##### Scores:
+motivation scores - use sum of sub-scales in description
