@@ -3,8 +3,8 @@
 ## DATA STRUCTURE
 
 - create_ACN_all.do -> created ACN_ALL.dta & ACN_ALL_wide.dta
-  - -> ACN_Infant_All.dta
-  - -> ACN_female_All.dta
+  - -> + Infant_all & distance = ACN_Infant_All.dta
+  - -> + Female_all & distance = ACN_female_All.dta
   
 
    
