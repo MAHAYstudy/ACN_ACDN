@@ -29,3 +29,4 @@
 
 ##### Scores:
 motivation scores - use sum of sub-scales in description
+v_tot - error in ACN_BL.do fixed, some scores are 0 --- missing all the subscales, replaced to be missing
