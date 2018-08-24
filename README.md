@@ -23,7 +23,10 @@
 ### create_ACN_all.do
 
 - Clean and reshape ACN data
-- created ACN_ALL.dta & ACN_ALL_wide.dta
+- created 
+  - ACN_ALL.dta : the cleaned dataset
+  - ACN_ALL_wide.dta : used to merge with infant_all and female_all
+  - ACN_All_site_wide.dta : based on site_id, used for descriptive analysis
 
 ## Other notes
 
