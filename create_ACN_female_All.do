@@ -281,44 +281,45 @@ use "${All_create}female_All", clear
 			  Total |        662      100.00
 		*/
 			
-			*check data with repeated year
-			bys idind year: gen year_repeated = _n 
-			tab year_repeated
-			browse idmen idind year year_* treatment id_acn id_acdn distance_acn distance_acdn idmendist_merge acn_merge
-				*>1 = missing idind and household data
-			tab treatment
-			/*
-				  type: |
-			  treatment |
-				  group |      Freq.     Percent        Cum.
-			------------+-----------------------------------
-					 T0 |      2,176       19.90       19.90
-					 T1 |      2,213       20.24       40.15
-					 T2 |      2,188       20.01       60.16
-					 T3 |      2,181       19.95       80.11
-					 T4 |      2,174       19.89      100.00
-			------------+-----------------------------------
-				  Total |     10,932      100.00
-			*/
-			drop if idind == . //(330 deleted)
-			
-			/*
-				  type: |
-			  treatment |
-				  group |      Freq.     Percent        Cum.
-			------------+-----------------------------------
-					 T0 |      2,114       19.94       19.94
-					 T1 |      2,141       20.19       40.13
-					 T2 |      2,121       20.01       60.14
-					 T3 |      2,124       20.03       80.17
-					 T4 |      2,102       19.83      100.00
-			------------+-----------------------------------
-				  Total |     10,602      100.00
-
-			*/
+					*check data with repeated year
+					bys idind year: gen year_repeated = _n 
+					tab year_repeated
+					browse idmen idind year year_* treatment id_acn id_acdn distance_acn distance_acdn idmendist_merge acn_merge
+						*>1 = missing idind and household data
+					tab treatment
+					/*
+						  type: |
+					  treatment |
+						  group |      Freq.     Percent        Cum.
+					------------+-----------------------------------
+							 T0 |      2,176       19.90       19.90
+							 T1 |      2,213       20.24       40.15
+							 T2 |      2,188       20.01       60.16
+							 T3 |      2,181       19.95       80.11
+							 T4 |      2,174       19.89      100.00
+					------------+-----------------------------------
+						  Total |     10,932      100.00
+					*/
+					drop if idind == . //(330 deleted)
+					
+					/*
+						  type: |
+					  treatment |
+						  group |      Freq.     Percent        Cum.
+					------------+-----------------------------------
+							 T0 |      2,114       19.94       19.94
+							 T1 |      2,141       20.19       40.13
+							 T2 |      2,121       20.01       60.14
+							 T3 |      2,124       20.03       80.17
+							 T4 |      2,102       19.83      100.00
+					------------+-----------------------------------
+						  Total |     10,602      100.00
+		
+					*/
+				
+			tsset, clear
 			tsset idind year, y 
 			
-		
 			
 			replace distance_acn = L.distance_acn if year == 2015 & distance_acn == . & L.distance_acn !=.
 			replace distance_acn = L.distance_acn if year == 2016 & distance_acn == . & L.distance_acn !=.
@@ -329,4 +330,4 @@ use "${All_create}female_All", clear
 			*input ACDN competency score =0 for control group
 			replace Dacn_competency_score = 0 if treatment == 0 & acn_competency_score != .
 			
-save "${All_create}ACN_Infant_All", replace
+save "${All_create}ACN_Female_All", replace

@@ -329,43 +329,89 @@ label var acn_smot_score "sum of motivation subscores"
 for var mot_*: rename X acn_X
 rename v_tot acn_v_tot
 
+drop if idacn == .
 
+save "${All_create}ACN_All_origin", replace
+
+		* add motivation score and vocabulary 
+		use  "${All_create}ACN_All_origin", clear
+		keep grappe year site_id tacn baseline_* turnover* idacn acn_age acn_marstatus ///
+		acn_nokids acn_otheractiv acn_edulevel acn_religion acn_wealth_index ///
+		act_curr_agri act_curr_trader act_bef_agri act_bef_trader act_bef_teacher ///
+		acn_knowledge_score acn_hygiene_score ///
+		acn_mot_score acn_mot_* acn_smot_score acn_v_tot
+		
+		/*
+		*Create an index for :
+			education level, vocabulary, knowledge, hygiene and motivation scores
+		 using PCA
+		*/
+		
+			global Xlist acn_edulevel acn_v_tot acn_knowledge_score acn_hygiene_score acn_smot_score
+			
+			describe $Xlist
+			summ $Xlist
+			corr $Xlist
+			
+			pca $Xlist, //mineigen(1)
+			screeplot, yline(1)
+			
+			rotate
+			
+			loadingplot
+		
+			estat kmo
+			
+			predict acn_competency_score
+			label var acn_competency_score "Index score of education level, vocabulary, knowledge, hygiene and motivation"
+			
+		*recode binary var otheractivity to 0/1
+		recode acn_otheractivity 2 = 0
+	
 save "${All_create}ACN_All", replace
 
-* add motivation score and vocabulary 
+* create ACN_side_wide for looking at ACN/ACDN characteristics
 use  "${All_create}ACN_All", clear
-keep grappe year tacn baseline_* turnover* idacn acn_age acn_marstatus ///
-acn_nokids acn_otheractiv acn_edulevel acn_religion acn_wealth_index ///
-act_curr_agri act_curr_trader act_bef_agri act_bef_trader act_bef_teacher ///
-acn_knowledge_score acn_hygiene_score ///
-acn_mot_score acn_mot_* acn_smot_score acn_v_tot
+foreach num in 4 5 6 {
+	for var idacn acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel ///
+	 acn_religion acn_wealth_index act_curr_agri act_curr_trader act_bef_agri ///
+	 act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score ///
+	 acn_mot_* acn_smot_score acn_v_tot acn_com*: g y`num'_X=X if year == 201`num'
+ }
 
-/*
-*Create an index for :
-	education level, vocabulary, knowledge, hygiene and motivation scores
- using PCA
-*/
+ global VAR idacn acn_age acn_marstatus acn_nokids acn_otheractivity acn_edulevel ///
+	 acn_religion acn_wealth_index act_curr_agri act_curr_trader act_bef_agri ///
+	 act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score ///
+	 acn_mot_score acn_mot_introject acn_mot_external acn_mot_intrinsic ///
+	 acn_mot_identif acn_mot_social acn_smot_score acn_v_tot acn_competency_score
+ 
+foreach num in 4 5 6 {
+foreach var of varlist $VAR {
+	bys site_id: egen `var'_1`num' = max(y`num'_`var') if tacn == 1
+	bys site_id: egen D`var'_1`num' = max(y`num'_`var') if tacn == 2
+	}
+}
 
-	global Xlist acn_edulevel acn_v_tot acn_knowledge_score acn_hygiene_score acn_mot_score
-	
-	describe $Xlist
-	summ $Xlist
-	corr $Xlist
-	
-	pca $Xlist, //mineigen(1)
-	screeplot, yline(1)
-	
-	rotate
-	
-	loadingplot
+foreach var of varlist $VAR {
+	bys site_id: egen `var'_BL = max(`var'_14)
+	bys site_id: egen D`var'_BL = max(D`var'_14)
+	bys site_id: egen `var'_ML = max(`var'_15)
+	bys site_id: egen D`var'_ML = max(D`var'_15)
+	bys site_id: egen `var'_EL = max(`var'_16)
+	bys site_id: egen D`var'_EL = max(D`var'_16)
+	drop `var'_14 D`var'_14 `var'_15 D`var'_15 `var'_16 D`var'_16
+	drop y4_`var' y5_`var' y6_`var'
+	}
 
-	estat kmo
-	
-	predict acn_competency_score
-	label var acn_competency_score "Index score of education level, vocabulary, knowledge, hygiene and motivation"
-	
+bys site_id: gen num=_n
+tab num
+keep if num == 1
 
+save  "${All_create}ACN_All_site_wide", replace
+
+	
 * keep one observation per grappe (reshaped wide)
+use  "${All_create}ACN_All", clear
 for var idacn acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel ///
  acn_religion acn_wealth_index act_curr_agri act_curr_trader act_bef_agri ///
  act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score ///
