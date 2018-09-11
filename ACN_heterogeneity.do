@@ -9,6 +9,7 @@ clear matrix
 **********************
 *ACN/ACDN heterogeneity analysis
 *Ling Hsin    08/2018
+*Updated: LH 9/10/18
 **********************
 
 * SET GLOBAL MACROS for path to main directories
@@ -103,6 +104,12 @@ use "${All_create}ACN_Infant_All", clear
 			label var asq_soc_sr  "Socio-Emotional Development"
 			label var asq_comm_sr  "Communication Skills"
 			
+		*Participation
+		global parACN "pr_visitACN3monts "
+		global parACDN "pr_visitACDN3months pr_nbvisitACDN3months pr_T4visitACDNlast30days pr_T4nbvisitACDNlast30days"
+		global parACDNT1T3 "pr_visitACDN3months pr_nbvisitACDN3months "
+		global parACDNT4 "pr_T4visitACDNlast30days pr_T4nbvisitACDNlast30days"
+			
 			
 		*Controls	
 		global controls "male infant_age_months i.region i.wealth_qui i.birth_order mother_age i.mother_edu "
@@ -196,6 +203,97 @@ use "${All_create}ACN_Infant_All", clear
 		est clear
 		}
 		
+		
+************************************************
+*TAKE-UP AND HETEROGENEITY
+************************************************
+	
+	* 1. ACN capacity heterogeneity _ take-up
+		cap erase "${TABLES}ACN_ACDN/takeup_capacity_ACN.xml"
+		cap erase "${TABLES}ACN_ACDN/takeup_capacity_ACN.txt"
+		foreach var of varlist $parACN {      
+				reg `var' i.treatment##c.acn_competency_score $controls ,  robust cl(grappe)
+					foreach num of numlist 1/4{
+					lincom `num'.treatment + `num'.treatment#c.acn_competency_score
+					global r`num' = `r(estimate)'
+					global p`num' = `r(p)'
+					}
+				 outreg2 using "${TABLES}ACN_ACDN/takeup_capacity_ACN", keep(i.treatment##c.acn_competency_score ) nocons excel ///
+					 alpha(0.001, 0.01, 0.05, 0.15) symbol(***, **, *, †) ///
+					 addt(post-interaction, `var' ) ///
+					 adds(T1, $r1, T1-p, $p1, T2, $r2, T2-p, $p2, T3, $r3, T3-p, $p3, T4, $r4, T4-p, $p4) 
+			
+		est clear
+		}
+		
+	* 2. ACDN capacity heterogeneity _ take-up
+		cap erase "${TABLES}ACN_ACDN/takeup_capacity_ACDN.xml"
+		cap erase "${TABLES}ACN_ACDN/takeup_capacity_ACDN.txt"
+		foreach var of varlist $parACN {      
+				reg `var' i.treatment##c.Dacn_competency_score $controls ,  robust cl(grappe)
+					foreach num of numlist 1/4{
+					lincom `num'.treatment + `num'.treatment#c.Dacn_competency_score
+					global Dr`num' = `r(estimate)'
+					global Dp`num' = `r(p)'
+					}
+				 outreg2 using "${TABLES}ACN_ACDN/takeup_capacity_ACDN", keep(i.treatment##c.Dacn_competency_score ) nocons excel ///
+					 alpha(0.001, 0.01, 0.05, 0.15) symbol(***, **, *, †) ///
+					 addt(ACDN post-interaction, `var' ) ///
+					 adds(T1, $Dr1, T1-p, $Dp1, T2, $Dr2, T2-p, $Dp2, T3, $Dr3, T3-p, $Dp3, T4, $Dr4, T4-p, $Dp4) 
+			
+		est clear
+		}
+		
+	* 3. ACN/ACDN Distance heterogeneity _ take-up
+		cap erase "${TABLES}ACN_ACDN/distance_takeup.xml"
+		cap erase "${TABLES}ACN_ACDN/distance_takeup.txt"
+		foreach var of varlist $parACN {      
+				reg `var' i.treatment##c.distance_acn $controls ,  robust cl(grappe)
+					foreach num of numlist 1/4{
+					lincom `num'.treatment + `num'.treatment#c.distance_acn
+					global r`num' = `r(estimate)'
+					global p`num' = `r(p)'
+					} 
+				 outreg2 using "${TABLES}ACN_ACDN/distance_takeup", keep(i.treatment##c.distance_acn ) nocons excel ///
+					 alpha(0.001, 0.01, 0.05, 0.15) symbol(***, **, *, †) ///
+					 title("Distance and take-up") ///
+					 addt(post-interaction, `var' ) ///
+					 adds(T1, $r1, T1-p, $p1, T2, $r2, T2-p, $p2, T3, $r3, T3-p, $p3, T4, $r4, T4-p, $p4) 
+			
+		est clear
+		}
+		
+		foreach var of varlist $parACDN {
+		replace `var' = 0 if treatment == 0
+		}
+		
+		foreach var of varlist $parACDNT1T3 {  
+				reg `var' i.treatment##c.distance_acn $controls ,  robust cl(grappe)
+					foreach num of numlist 1/3{
+					lincom `num'.treatment + `num'.treatment#c.distance_acn
+					global r`num' = `r(estimate)'
+					global p`num' = `r(p)'
+					} 
+					outreg2 using "${TABLES}ACN_ACDN/distance_takeup", keep(i.treatment##c.distance_acn ) nocons excel ///
+					 alpha(0.001, 0.01, 0.05, 0.15) symbol(***, **, *, †) ///
+					 addt(post-interaction, `var' ) ///
+					 adds(T1, $r1, T1-p, $p1, T2, $r2, T2-p, $p2, T3, $r3, T3-p, $p3) 
+		}
+		
+		foreach var of varlist $parACDNT4 {  
+				reg `var' i.treatment##c.distance_acn $controls ,  robust cl(grappe)
+					foreach num of numlist 4{
+					lincom `num'.treatment + `num'.treatment#c.distance_acn
+					global r`num' = `r(estimate)'
+					global p`num' = `r(p)'
+					} 
+					outreg2 using "${TABLES}ACN_ACDN/distance_takeup", keep(i.treatment##c.distance_acn ) nocons excel ///
+					 alpha(0.001, 0.01, 0.05, 0.15) symbol(***, **, *, †) ///
+					 addt(post-interaction, `var' ) ///
+					 adds(T4, $r4, T4-p, $p4) 
+		}
+		
+		
 ************************************************
 *Access dataset - ACN Female
 ************************************************
@@ -271,3 +369,6 @@ use "${All_create}ACN_Female_All", clear
 			
 		est clear
 		}
+
+		
+		

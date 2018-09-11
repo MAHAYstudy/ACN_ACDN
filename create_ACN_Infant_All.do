@@ -103,7 +103,6 @@ cd "$Mada"
 		drop fpc01-a204
 		drop fb02fenc-fd16c_s
 		drop fpg_demo99-fpc_rawtot
-		drop clonefpc01-clonefpc_1pl_sresid
 		drop fpc19_rc-fps37_rc
 		drop fl09a_0-fd28a_5
 		drop fpc19b-q1_5

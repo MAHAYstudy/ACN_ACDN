@@ -331,6 +331,13 @@ rename v_tot acn_v_tot
 
 drop if idacn == .
 
+* another variable of number of home visits (LH 8/31/18)
+gen homevisit_week_from_cb04 = cb04_10+cb04_11+cb04_12+cb04_14+cb04_15
+label var homevisit_week_from_cb04 "# of home visits ACDN did in a week"
+	*cb12a5: ACN only in a month
+label var cb05 "CB05: Number of mothers visited at home in a week(ACN/ACDN)"
+	
+	
 save "${All_create}ACN_All_origin", replace
 
 		* add motivation score and vocabulary 
@@ -339,7 +346,8 @@ save "${All_create}ACN_All_origin", replace
 		acn_nokids acn_otheractiv acn_edulevel acn_religion acn_wealth_index ///
 		act_curr_agri act_curr_trader act_bef_agri act_bef_trader act_bef_teacher ///
 		acn_knowledge_score acn_hygiene_score ///
-		acn_mot_score acn_mot_* acn_smot_score acn_v_tot
+		acn_mot_score acn_mot_* acn_smot_score acn_v_tot ///
+		cb05 cb12a5 homevisit_week_from_cb04
 		
 		/*
 		*Create an index for :
@@ -376,14 +384,15 @@ foreach num in 4 5 6 {
 	for var idacn acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel ///
 	 acn_religion acn_wealth_index act_curr_agri act_curr_trader act_bef_agri ///
 	 act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score ///
-	 acn_mot_* acn_smot_score acn_v_tot acn_com*: g y`num'_X=X if year == 201`num'
+	 acn_mot_* acn_smot_score acn_v_tot acn_com* cb05 cb12a5 homevisit_week_from_cb04: g y`num'_X=X if year == 201`num'
  }
 
  global VAR idacn acn_age acn_marstatus acn_nokids acn_otheractivity acn_edulevel ///
 	 acn_religion acn_wealth_index act_curr_agri act_curr_trader act_bef_agri ///
 	 act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score ///
 	 acn_mot_score acn_mot_introject acn_mot_external acn_mot_intrinsic ///
-	 acn_mot_identif acn_mot_social acn_smot_score acn_v_tot acn_competency_score
+	 acn_mot_identif acn_mot_social acn_smot_score acn_v_tot acn_competency_score ///
+	 cb05 cb12a5 homevisit_week_from_cb04
  
 foreach num in 4 5 6 {
 foreach var of varlist $VAR {
