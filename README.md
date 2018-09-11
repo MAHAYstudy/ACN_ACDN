@@ -33,3 +33,10 @@
 ##### Scores:
 motivation scores - use sum of sub-scales in description
 v_tot - error in ACN_BL.do fixed, some scores are 0 --- missing all the subscales, replaced to be missing
+
+#### Log
+
+##### 9/6/18
+- Home score: based on FCI, using the sum of all five scales is favorable.
+  - problems: 
+    - totbook: the number of books can not reflect the family home condition. (Questionaire range was too wide.)
