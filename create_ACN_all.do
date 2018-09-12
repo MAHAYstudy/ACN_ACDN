@@ -361,7 +361,7 @@ save "${All_create}ACN_All_origin", replace
 			summ $Xlist
 			corr $Xlist
 			
-			pca $Xlist, //mineigen(1)
+			pca $Xlist, mineigen(1)
 			screeplot, yline(1)
 			
 			rotate

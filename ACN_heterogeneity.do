@@ -87,13 +87,12 @@ use "${All_create}ACN_Infant_All", clear
 		
 			
 		*Fam 2: Intermediate indicators
-		global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h home_score2 bd_timesate24hr"
+		global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h home_score_FCI_pca bd_timesate24hr"
 		
 			lab var dairy_24h "dairy, past 24h" // binary
 			lab var meat_egg_24h "proteins, past 24h" // binary
 			lab var vitA_24h "vit A, past 24h" // binary
 			lab var divers_24h "food diversity, past 24h" //categories 0-6
-			label var home_score2 "Home Play"
 			
 		*Fam 3: child development indicators
 		global fam3 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all_sr"
@@ -164,7 +163,7 @@ use "${All_create}ACN_Infant_All", clear
 		sum Dacn_competency_score, d
 		sum Dacn_competency_score if treatment == 0, d
 		*change ACDN competency score for T0 to the minimum
-		replace Dacn_competency_score = -2.057772 if treatment == 0
+		replace Dacn_competency_score = -2.44 if treatment == 0
 		
 		cap erase "${TABLES}ACN_ACDN/ACDN_capacity_T0min.xml"
 		cap erase "${TABLES}ACN_ACDN/ACDN_capacity_T0min.txt"
