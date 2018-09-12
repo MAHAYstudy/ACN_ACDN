@@ -11,6 +11,14 @@
 
 ## dofiles
 
+### ACN_heterogeneity.do
+
+- ACN and ACDN capacity and distance heterogeneity analysis
+- outcomes: include ITT outcomes and take-up
+
+- take-up score: using data originally from female.dta
+  - route of data: female.dta -> infant_all.dta -> ITT_table2.dta -> ACN_Infant_All.dta
+
 ### ACN_descriptives.do
 - Compare characteristics of ACNs and ACDNs
 
@@ -40,3 +48,5 @@ v_tot - error in ACN_BL.do fixed, some scores are 0 --- missing all the subscale
 - Home score: based on FCI, using the sum of all five scales is favorable.
   - problems: 
     - totbook: the number of books can not reflect the family home condition. (Questionaire range was too wide.)
+    - no number of playobjects
+  - use pca score of the items 
