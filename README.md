@@ -10,7 +10,7 @@
 
 ### Heterogeneity graphs
 
-- In folder Madagascar Mahay Data/analysis/tables/ACN_ACDN/
+- In folder Madagascar Mahay Data/analysis/tables/ACN_ACDN/ACN_ACDN_Heterogeneity/
    
 
 ## dofiles
