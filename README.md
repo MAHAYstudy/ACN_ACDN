@@ -6,7 +6,11 @@
   - -> + Infant_all & distance = ACN_Infant_All.dta
   - -> + Female_all & distance = ACN_female_All.dta
   
+## GRAPHS
 
+### Heterogeneity graphs
+
+- In folder Madagascar Mahay Data/analysis/tables/ACN_ACDN/
    
 
 ## dofiles
