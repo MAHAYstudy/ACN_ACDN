@@ -162,13 +162,16 @@ use "${All_create}ACN_Infant_All", clear
 		
 		sum Dacn_competency_score, d
 		sum Dacn_competency_score if treatment == 0, d
+		sum Dacn_competency_score if treatment == 1, d
+		sum Dacn_competency_score if treatment == 4, d
 		*change ACDN competency score for T0 to the minimum
-		replace Dacn_competency_score = -2.44 if treatment == 0
+		replace Dacn_competency_score = (Dacn_competency_score+2.45) if Dacn_competency_score != .
+		replace Dacn_competency_score = 0 if treatment == 0
 		
 		cap erase "${TABLES}ACN_ACDN/ACDN_capacity_T0min.xml"
 		cap erase "${TABLES}ACN_ACDN/ACDN_capacity_T0min.txt"
 		foreach var of varlist $fam1 $fam2 $fam3 {      
-				reg `var' i.treatment##c.Dacn_competency_score $controls ,  robust cl(grappe)
+				reg `var' i.treatment i.treatment#c.Dacn_competency_score $controls ,  robust cl(grappe)
 					foreach num of numlist 1/4{
 					lincom `num'.treatment + `num'.treatment#c.Dacn_competency_score
 					global Dr`num' = `r(estimate)'
@@ -206,6 +209,10 @@ use "${All_create}ACN_Infant_All", clear
 ************************************************
 *TAKE-UP AND HETEROGENEITY
 ************************************************
+
+foreach var of varlist $parACDN {
+replace `var' = 0 if treatment == 0
+}
 	
 	* 1. ACN capacity heterogeneity _ take-up
 		cap erase "${TABLES}ACN_ACDN/takeup_capacity_ACN.xml"
@@ -228,8 +235,8 @@ use "${All_create}ACN_Infant_All", clear
 	* 2. ACDN capacity heterogeneity _ take-up
 		cap erase "${TABLES}ACN_ACDN/takeup_capacity_ACDN.xml"
 		cap erase "${TABLES}ACN_ACDN/takeup_capacity_ACDN.txt"
-		foreach var of varlist $parACN {      
-				reg `var' i.treatment##c.Dacn_competency_score $controls ,  robust cl(grappe)
+		foreach var of varlist $parACDN $parACDNT4{      
+				reg `var' i.treatment i.treatment#c.Dacn_competency_score $controls ,  robust cl(grappe)
 					foreach num of numlist 1/4{
 					lincom `num'.treatment + `num'.treatment#c.Dacn_competency_score
 					global Dr`num' = `r(estimate)'
@@ -262,9 +269,7 @@ use "${All_create}ACN_Infant_All", clear
 		est clear
 		}
 		
-		foreach var of varlist $parACDN {
-		replace `var' = 0 if treatment == 0
-		}
+
 		
 		foreach var of varlist $parACDNT1T3 {  
 				reg `var' i.treatment##c.distance_acn $controls ,  robust cl(grappe)
